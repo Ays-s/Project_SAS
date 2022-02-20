@@ -1,0 +1,12 @@
+scene = "custom"
+seed = 11277
+wpN = 6 -- 5
+wpSize = 0.30
+wpZ = 0.0025
+fidelSonar = 0.030 -- 0.02 -- 0.03
+justSonar = 0.000 -- 0.1
+fidelCompass = 4.000 -- 0.02 -- 0.03
+justCompass = 3.000 -- 0.1
+periodSpike = -1 -- no spike noise
+setBatteryLevel = 1.00 -- -1.0 : random [0.7, 1.0]
+nTicksPerRevol = 240 -- ticks per revol encoders
