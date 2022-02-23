@@ -10,7 +10,7 @@ import numpy as np
 class Car:
     # interrupt handler
     def interrupt_handler(self,signal, frame):
-        print ('You pressed Ctrl+C! Car will stop in the next 2 seconds ')
+        print('You pressed Ctrl+C! Car will stop in the next 2 seconds ')
         if self.vrep.isAlive():
             self.set_speed(0.,0.)
             self.full_end()
@@ -30,7 +30,7 @@ class Car:
         self.encoderRight = 0
         self.speedLeft = 0.0
         self.speedRight = 0.0
-        self.heading = 0.0 # new sensor 2020 (magnetic compass)
+        self.heading = 0.0 # new sensor 2020(magnetic compass)
 
         #self.debug = True # display debug messages on console
         self.debug = False # do not display debug 
@@ -55,8 +55,8 @@ class Car:
         self.vrep.start()
         # wait for robot to be ready
         self.car_ready.wait()
-        print ("Car ready ...")
-        # trap hit of ctrl-x to stop robot and exit (emergency stop!)
+        print("Car ready ...")
+        # trap hit of ctrl-x to stop robot and exit(emergency stop!)
         signal.signal(signal.SIGINT, self.interrupt_handler)
         # store start time
         self.rob_start_time = time.time()
@@ -69,8 +69,8 @@ class Car:
             try:
                 sock.connect(srv)
             except:
-                print ("Simulation must be alive to execute your python program properly.")
-                print ("Type Ctrl-C to exit, start the simulation and then execute your python program.")
+                print("Simulation must be alive to execute your python program properly.")
+                print("Type Ctrl-C to exit, start the simulation and then execute your python program.")
                 break
 
             sock.settimeout(0.5)
@@ -85,17 +85,17 @@ class Car:
                 while len(data) < 42:
                     data += sock.recv(42)
             except:
-                print ("socker error , duration is %f ms, try to reconnect !!!"%((time.time() - t0)*1000.0))
+                print("socker error , duration is %f ms, try to reconnect !!!"%((time.time() - t0)*1000.0))
             if len(data) == 42:
                 vrx = struct.unpack('<ccHHfffffffff',data)             
                 car.vrep_update_sim_param(upd_sock,vrx)
             else:
-                print ("bad data length ",len(data))
+                print("bad data length ",len(data))
 
 
             sock.close()
             car.cnt_sock = car.cnt_sock + 1
-            tsock = (time.time() - t0)*1000.0
+            tsock =(time.time() - t0)*1000.0
             car.dta_sock += tsock
             if tsock > car.dtmx:
                 car.dtmx = tsock
@@ -103,8 +103,8 @@ class Car:
                 car.dtmn = tsock
             dtm = car.dta_sock/float(car.cnt_sock)
             if car.debug:
-                if (car.cnt_sock % 100) == 99:
-                    print ("min,mean,max socket thread duration (ms) : ",car.dtmn,dtm,car.dtmx)
+                if(car.cnt_sock % 100) == 99:
+                    print("min,mean,max socket thread duration(ms) : ",car.dtmn,dtm,car.dtmx)
             ev.set()
 
             if not car.simulation_alive:
@@ -121,13 +121,13 @@ class Car:
         self.encoderRight = int(vrx[11])
         self.heading = vrx[12]
         
-    def stop (self):
+    def stop(self):
         """
         Stop the robot by setting the speed of the motors to 0
         """
         self.set_speed(0.,0.)
 
-    def full_end (self):
+    def full_end(self):
         """
         Fully stop the simulation of the robot , set motors speed to 0
         and close the connection with the simulator vrep
@@ -137,11 +137,11 @@ class Car:
         self.rob_stop_time = time.time()
         mission_duration = self.rob_stop_time - self.rob_start_time
         time.sleep(2.0)
-        print ("clean stop of car")
-        print ("mission duration : %.2f"%(mission_duration))
+        print("clean stop of car")
+        print("mission duration : %.2f"%(mission_duration))
         self.simulation_alive = False
 
-    def set_speed (self,speedLeft,speedRight):
+    def set_speed(self,speedLeft,speedRight):
         """
         speedLeft : set speed of left wheel
         speedLeft : set speed of right wheel
@@ -155,15 +155,15 @@ class Car:
             time.sleep(0.0001)
 
 
-    def get_odometers (self):
+    def get_odometers(self):
         """
         return the values of ticks counter for the two wheels
         """
         return self.encoderLeft,self.encoderRight
 
-    def get_sonar (self,name):
+    def get_sonar(self,name):
         """
-        return the measurment of the selected sonar (ultrasonic sensor)
+        return the measurment of the selected sonar(ultrasonic sensor)
         if obstacle between 0.1 m to 1.5 m return the distance to 
         the nearest obstacle, otherwise return 0.0
         distance is returned in meters
@@ -180,7 +180,7 @@ class Car:
             val = self.distBack
         return val
 
-    def get_multiple_sonars (self,names):
+    def get_multiple_sonars(self,names):
         val = []
         for name in names:
             if name == "front":
@@ -198,5 +198,5 @@ class Car:
                 val.append(self.distBack)
         return val
 
-    def get_heading (self):
+    def get_heading(self):
         return (self.heading)

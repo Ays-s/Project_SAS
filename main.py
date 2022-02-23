@@ -1,51 +1,71 @@
+import argparse
+import numpy as np
+import time
+
 from src.car import Car  # get robot simulator
 from src.control import RobotControl
 from src.filtre import * 
 from src.node import Node
-import numpy as np
-import time
 
+# Constante pour PID
+kp = 25
+ki = 12
+kd = 20
+dist_to_wall = 20
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog='SAS Robot project')
+    parser.add_argument('--showgraph', action='store_true')
+    parser.add_argument('--shownodes', action='store_true')
+    parser.add_argument('--savecsv', action='store_true')
+    args = parser.parse_args()
+
+    # instancie le robot et le controleur
     rb = Car()
     ctrl = RobotControl()
+
+    # prepare la gestions des noeuds
     startingNode = Node()
-
     nodes = [startingNode]
-    free_ang = ctrl.find_free_path(rb)
-    if free_ang != 0: ctrl.turn_odo(rb, free_ang)
-    front=  rb.get_sonar('front')
-    front_heading = 90
-    lastodo = sum(rb.get_odometers())//2
-    rb.set_speed(100., 100.)
-    while front == 0.0 or front > 0.35:
-        front=  rb.get_sonar('front')
-        free_ang = ctrl.find_free_path(rb)
-        if free_ang != 0:
-            rb.set_speed(0., 0.)
-            ctrl.move_odo(rb, 0.15)
-            distance = ctrl.cacl_distance_odo(abs(sum(rb.get_odometers())//2 - lastodo))
-            newNode = Node()
-            newNode.addNeighbors(nodes[-1], distance, -free_ang)
-            nodes[-1].addNeighbors(newNode, distance, free_ang)
-            nodes.append(newNode)
-            angToTurn = free_ang + front_heading - rb.get_heading()
-            while angToTurn > 180: angToTurn -= 360
-            while angToTurn <-180: angToTurn += 360
-            ctrl.turn_odo(rb, angToTurn)
-            lastodo = sum(rb.get_odometers())//2
 
-            front_heading += free_ang
-            while front_heading >= 360: front_heading -= 360
-            while front_heading <= 0 : front_heading += 360 
+    traces = []
 
-            rb.set_speed(100., 100.)     
-        else: 
-            time.sleep(0.05)
-    rb.stop()
+    print("Mission started.")
+    free_ang = 0
+    while free_ang != 180:
+        face_to_folow = ctrl.face_to_folow(rb)
+        trace = ctrl.follow_guideline_PID(rb, 
+                            rb.get_sonar(face_to_folow), face_to_folow, 
+                            kp, kd, ki,
+                            nomspeed = 40, 
+                            stop = 0.25, 
+                            graph=(args.showgraph or args.savecsv))
+        last_odometers = sum(rb.get_odometers())//2
+        free_ang = ctrl.turn_to_free_path(rb)
+        front_heading = rb.get_heading()
+        distance = ctrl.cacl_distance_odo(abs(sum(rb.get_odometers())//2 - last_odometers))
+        newNode = Node()
+        newNode.addNeighbors(nodes[-1], distance, -free_ang)
+        nodes[-1].addNeighbors(newNode, distance, free_ang)
+        nodes.append(newNode)
+        print("New Node added.")
+        traces.append(trace)
 
     rb.full_end() #fin du circuit
 
-    for node in nodes:
-        print(node)   
+    if args.shownodes:
+        for node in nodes:
+            print(node)
+    if args.savecsv:
+        for trace in traces:
+            with open('resultat.csv', 'a') as file:
+                file.write(f'Kp={kp}, Ki={ki} ,Kd={kd}:'+str(trace)[1:-1].replace(', ',':').replace('.',',')+'\n')
+    if args.showgraph:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.title(f'Trace for Kp={kp}, Ki={ki} ,Kd={kd}')
+        for trace in traces:
+            plt.plot(trace)
+        plt.show()
+
     
