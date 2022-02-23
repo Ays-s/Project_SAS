@@ -8,9 +8,9 @@ from src.filtre import *
 from src.node import Node
 
 # Constante pour PID
-kp = 25
-ki = 12
-kd = 20
+KP = 20
+KI = 0.15
+KD = 25
 dist_to_wall = 20
 
 if __name__ == "__main__":
@@ -18,7 +18,17 @@ if __name__ == "__main__":
     parser.add_argument('--showgraph', action='store_true')
     parser.add_argument('--shownodes', action='store_true')
     parser.add_argument('--savecsv', action='store_true')
+    parser.add_argument('-kp', type=float, help='Coefficient protionel', default=None)
+    parser.add_argument('-kd', type=float, help='Coefficient intégral', default=None)
+    parser.add_argument('-ki', type=float, help='Coefficient dérivé ', default=None)
     args = parser.parse_args()
+
+    if args.kp is None:
+        kp = KP
+    if args.kd is None:
+        kd = KD
+    if args.ki is None:
+        ki = KI
 
     # instancie le robot et le controleur
     rb = Car()

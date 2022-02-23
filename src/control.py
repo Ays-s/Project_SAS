@@ -89,6 +89,7 @@ class RobotControl:
         """
         print(f'Folowing {face}...')
         other = {'left':'right', 'right':'left'}
+        sumError = 0
         def find_wall():
             d = rb.get_sonar('front')
             return d == 0.0 or d>stop
@@ -98,6 +99,7 @@ class RobotControl:
             sonars = [val]
         dist = valFltr2(valFltr1(val))
         error = instruction - dist #initialisation du correcteur
+        sumError += error
         lastError = error
         order = kp*error
         rb.set_speed(nomspeed+order, nomspeed-order)
@@ -109,14 +111,15 @@ class RobotControl:
                     face = other[face]
                     print(f'Folowing {face}...')
                     val = rb.get_sonar(face)
+                    sumError = 0
                 val = rb.get_sonar(face)
             if graph:
                 sonars.append(val)
             dist = valFltr2(valFltr1(val)) #filtre la valeur du sonar
             error = instruction - dist
             diffError = (error-lastError)/loopIterTime #erreur derivée
-            moyError = loopIterTime*(error+lastError)/2 #erreur intégrale
-            order = kp*error + kd*diffError +ki*moyError #ordre de vitesse
+            sumError += error #erreur intégrale
+            order = kp*error + kd*diffError +ki*sumError #ordre de vitesse
             rb.set_speed(nomspeed+order, nomspeed-order)
             lastError = error
             time.sleep(loopIterTime) # wait   
