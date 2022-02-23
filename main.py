@@ -9,8 +9,8 @@ from src.node import Node
 
 # Constante pour PID
 KP = 20
-KI = 0.15
-KD = 25
+KI = 0
+KD = 5
 dist_to_wall = 20
 
 if __name__ == "__main__":
@@ -23,12 +23,12 @@ if __name__ == "__main__":
     parser.add_argument('-ki', type=float, help='Coefficient dérivé ', default=None)
     args = parser.parse_args()
 
-    if args.kp is None:
-        kp = KP
-    if args.kd is None:
-        kd = KD
-    if args.ki is None:
-        ki = KI
+    if args.kp is None: kp = KP
+    else: kp = args.kp
+    if args.kd is None: kd = KD
+    else: kd = args.kd
+    if args.ki is None: ki = KI
+    else: ki = args.ki
 
     # instancie le robot et le controleur
     rb = Car()

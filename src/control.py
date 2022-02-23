@@ -89,6 +89,7 @@ class RobotControl:
         """
         print(f'Folowing {face}...')
         other = {'left':'right', 'right':'left'}
+        orderSens = {'left':-1, 'right':1}
         sumError = 0
         def find_wall():
             d = rb.get_sonar('front')
@@ -110,6 +111,7 @@ class RobotControl:
                 if self.correct_wall(rb, face):
                     face = other[face]
                     print(f'Folowing {face}...')
+                    instruction = rb.get_sonar(face)
                     val = rb.get_sonar(face)
                     sumError = 0
                 val = rb.get_sonar(face)
@@ -119,8 +121,8 @@ class RobotControl:
             error = instruction - dist
             diffError = (error-lastError)/loopIterTime #erreur derivée
             sumError += error #erreur intégrale
-            order = kp*error + kd*diffError +ki*sumError #ordre de vitesse
-            rb.set_speed(nomspeed+order, nomspeed-order)
+            order = orderSens[face]*(kp*error + kd*diffError) # + ki*sumError #ordre de vitesse
+            rb.set_speed(nomspeed-order, nomspeed+order)
             lastError = error
             time.sleep(loopIterTime) # wait   
         # stop the robot
