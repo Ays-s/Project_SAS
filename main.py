@@ -44,13 +44,13 @@ if __name__ == "__main__":
     free_ang = 0
     while free_ang != 180:
         face_to_folow = ctrl.face_to_folow(rb)
+        last_odometers = sum(rb.get_odometers())//2
         trace = ctrl.follow_guideline_PID(rb, 
                             rb.get_sonar(face_to_folow), face_to_folow, 
                             kp, kd, ki,
                             nomspeed = 40, 
                             stop = 0.25, 
                             graph=(args.showgraph or args.savecsv))
-        last_odometers = sum(rb.get_odometers())//2
         free_ang = ctrl.turn_to_free_path(rb)
         front_heading = rb.get_heading()
         distance = ctrl.cacl_distance_odo(abs(sum(rb.get_odometers())//2 - last_odometers))
